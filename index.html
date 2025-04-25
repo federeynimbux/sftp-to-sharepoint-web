@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estado del Proceso</title>
+</head>
+<body>
+    <h1>Estado del Proceso</h1>
+    <p id="estado">Cargando...</p>
+    
+    <script>
+        async function checkStatus() {
+            const response = await fetch('http://20.55.42.42:8989/status');  // La IP de tu VM o la URL de tu API
+            const data = await response.json();
+            document.getElementById('estado').innerText = `Estado: ${data.status}`;
+            
+            if (data.status !== 'completado' && data.status !== 'error') {
+                setTimeout(checkStatus, 10000);  // Vuelve a consultar cada 10 segundos
+            }
+        }
+
+        checkStatus();  // Llama a la función cuando carga la página
+    </script>
+</body>
+</html>
+
