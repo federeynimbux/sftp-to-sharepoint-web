@@ -1,32 +1,117 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estado del Proceso</title>
+  <meta charset="UTF-8" />
+  <title>Transferencia a SharePoint</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f4f6f8;
+      padding: 2rem;
+      color: #333;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background-color: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #0078d4;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      width: 100%;
+      background-color: #0078d4;
+      color: white;
+      padding: 0.7rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005fa3;
+    }
+    .status {
+      margin-top: 1.5rem;
+      font-size: 1.1rem;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-    <h1>Estado del Proceso</h1>
-    <p id="estado">Cargando...</p>
-    
-    <script>
-        // Función que consulta el estado de la API
+  <div class="container">
+    <h1>Transferencia a SharePoint</h1>
+
+    <form id="transferForm">
+      <label for="subfolder">Nombre del subfolder:</label>
+      <input type="text" id="subfolder" name="subfolder" required />
+      <button type="submit">Iniciar transferencia</button>
+    </form>
+
+    <div class="status">
+      <p id="estado">Esperando inicio...</p>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('transferForm');
+    const estadoEl = document.getElementById('estado');
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const subfolder = document.getElementById('subfolder').value;
+
+      estadoEl.textContent = 'Llamando a Logic App...';
+
+      try {
+        const logicAppUrl = 'https://transfer-to-sharepoint.azurewebsites.net/api/transfer-to-sharepoint/triggers/When_a_HTTP_request_is_received/invoke?api-version=2022-05-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=a--gO32QdJb_UYWTqvC6K8jbSNYcgpSPMGGSmtB2ABY';
+
+        const response = await fetch(logicAppUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subfolder })
+        });
+
+        if (!response.ok) throw new Error('Error al llamar la Logic App');
+
+        estadoEl.textContent = 'Proceso iniciado. Consultando estado...';
+
         async function checkStatus() {
-            // Llama a la API para obtener el estado del proceso
-            const response = await fetch('http://20.55.42.42:8989/status');  // Aquí debes poner la URL de tu API
-            const data = await response.json();
-            
-            // Actualiza el contenido del elemento HTML con el nuevo estado
-            document.getElementById('estado').innerText = `Estado: ${data.status}`;
-            
-            // Si el estado no es 'completado' ni 'error', vuelve a consultar cada 10 segundos
-            if (data.status !== 'completado' && data.status !== 'error') {
-                setTimeout(checkStatus, 10000);  // Vuelve a consultar cada 10 segundos
-            }
+          const statusRes = await fetch('http://20.55.42.42:8989/status');
+          const data = await statusRes.json();
+          estadoEl.textContent = `Estado: ${data.status}`;
+
+          if (data.status !== 'completado' && data.status !== 'error') {
+            setTimeout(checkStatus, 10000);
+          }
         }
 
-        // Llama a la función cuando carga la página
-        checkStatus();  
-    </script>
+        checkStatus();
+
+      } catch (err) {
+        console.error(err);
+        estadoEl.textContent = 'Error al iniciar el proceso';
+      }
+    });
+  </script>
 </body>
 </html>
+
