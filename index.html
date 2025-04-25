@@ -10,18 +10,23 @@
     <p id="estado">Cargando...</p>
     
     <script>
+        // Función que consulta el estado de la API
         async function checkStatus() {
-            const response = await fetch('http://20.55.42.42:8989/status');  // La IP de tu VM o la URL de tu API
+            // Llama a la API para obtener el estado del proceso
+            const response = await fetch('http://20.55.42.42:8989/status');  // Aquí debes poner la URL de tu API
             const data = await response.json();
+            
+            // Actualiza el contenido del elemento HTML con el nuevo estado
             document.getElementById('estado').innerText = `Estado: ${data.status}`;
             
+            // Si el estado no es 'completado' ni 'error', vuelve a consultar cada 10 segundos
             if (data.status !== 'completado' && data.status !== 'error') {
                 setTimeout(checkStatus, 10000);  // Vuelve a consultar cada 10 segundos
             }
         }
 
-        checkStatus();  // Llama a la función cuando carga la página
+        // Llama a la función cuando carga la página
+        checkStatus();  
     </script>
 </body>
 </html>
-
