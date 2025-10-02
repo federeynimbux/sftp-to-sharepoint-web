@@ -8,6 +8,10 @@
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans min-h-screen flex items-center justify-center">
   <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-md space-y-6">
+
+    <!-- Usuario logueado -->
+    <div id="userInfo" class="text-sm text-gray-700 text-center"></div>
+
     <h1 class="text-2xl font-bold text-center text-blue-700">Transferencia a SharePoint</h1>
 
     <form id="form" class="space-y-4">
@@ -36,6 +40,25 @@
   </div>
 
   <script>
+    // Mostrar usuario logueado desde Azure Static Web App
+    async function showUser() {
+      try {
+        const res = await fetch('/.auth/me');
+        const data = await res.json();
+        if (data.length > 0) {
+          document.getElementById('userInfo').textContent =
+            `Bienvenido, ${data[0].userDetails}`;
+        } else {
+          // Si no hay login, redirige al login de Entra ID
+          window.location.href = '/.auth/login/aad';
+        }
+      } catch (err) {
+        console.error("Error obteniendo usuario", err);
+      }
+    }
+    showUser();
+
+    // Tu lógica original de formulario
     const form = document.getElementById("form");
     const status = document.getElementById("status");
 
@@ -44,7 +67,6 @@
 
       const subfolder = document.getElementById("subfolder").value.trim();
 
-      // Validación adicional por JS (además del atributo pattern del input)
       if (!/^\d{6}$/.test(subfolder)) {
         status.textContent = "Formato inválido. Usar AAAAMM (ej: 202408)";
         status.className = "text-center text-red-500 text-sm";
@@ -79,4 +101,3 @@
   </script>
 </body>
 </html>
-
