@@ -44,13 +44,14 @@
     async function showUser() {
       try {
         const res = await fetch('/.auth/me');
+        if (!res.ok) {
+          console.warn("Usuario no autenticado o error en /.auth/me");
+          return;
+        }
         const data = await res.json();
         if (data.length > 0) {
           document.getElementById('userInfo').textContent =
             `Bienvenido, ${data[0].userDetails}`;
-        } else {
-          // Si no hay login, redirige al login de Entra ID
-          window.location.href = '/.auth/login/aad';
         }
       } catch (err) {
         console.error("Error obteniendo usuario", err);
@@ -58,7 +59,7 @@
     }
     showUser();
 
-    // Tu lógica original de formulario
+    // Lógica original del formulario
     const form = document.getElementById("form");
     const status = document.getElementById("status");
 
